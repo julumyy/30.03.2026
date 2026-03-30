@@ -23,3 +23,15 @@ class Manager:
             if tenant.apartment not in self.apartments:
                 return False
         return True
+    
+    def get_apartment_costs(self, apartment_key, year, month):
+        total = 0
+        #apartments = Apartment.from_json_file(parameters.apartments_json_path)
+        for bill in self.bills:
+            if apartment_key == bill.apartment:
+                if year == bill.settlement_year:
+                    if month == bill.settlement_month:
+                        total += bill.amount_pln
+        
+        return total
+        
