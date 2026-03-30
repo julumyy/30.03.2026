@@ -1,8 +1,10 @@
 import pytest
 
 from pydantic import ValidationError
-from src.models import Apartment, Tenant
-
+from src import manager
+from src.models import Apartment, Parameters, Tenant
+from src.models import ApartmentSettlement
+from src.manager import Manager
 
 def test_apartment_fields():
     data = Apartment(
@@ -84,3 +86,53 @@ def test_tenant_from_dict():
     with pytest.raises(ValidationError):
         data['rent_pln'] = "1500PLN" # Invalid field
         wrong_tenant = Tenant(**data)
+
+def test_apartment_settlement_logic():
+
+    manager = Manager(Parameters())
+    apartment_id = "apart-polanka"
+    settlement = manager.create_apartment_settlement(apartment_id, month=1, year=2025)
+
+    assert settlement.apartment == apartment_id
+    assert settlement.month == 1
+    assert settlement.year == 2025
+
+    assert settlement.total_bills_pln == 910.0   
+    assert settlement.total_rent_pln == 1150.0
+    assert settlement.total_due_pln == 910.0
+    assert isinstance(settlement.total_due_pln, float)
+
+    empty_settlement = manager.create_apartment_settlement("apart-empty", month=1, year=2025)
+
+    assert empty_settlement.total_due_pln == 0.0
+    assert empty_settlement.total_bills_pln == 0.0
+    assert empty_settlement.apartment == "apart-empty"
+
+def test_should_create_list_of_tenant_settlements():
+
+    manager = Manager(Parameters())
+    apt_settlement = ApartmentSettlement(
+        apartment="apart-polanka",
+        month=1,
+        year=2024,
+        total_rent_pln=0.0,
+        total_bills_pln=1372.0,
+        total_due_pln=1372.0
+    )
+
+    tenants=["Nowak", "Kowalski", "Adamska"]
+
+    results = manager.create_tenant_settlements(apt_settlement, tenants)
+
+    assert len(results) == 3
+    assert results[0].tenant == "Nowak"
+    assert results[1].tenant == "Kowalski" 
+    assert results[2].tenant == "Adamska"  
+    #assert results[1].bills_pln == 1372.0
+    assert results[0].bills_pln == 1372.0
+    assert results[0].month == apt_settlement.month
+    assert results[0].year == apt_settlement.year
+    assert results[0].apartment_settlement == apt_settlement.apartment
+    assert isinstance(results[0].bills_pln, float)
+    assert results[0].total_due_pln == 1372.0
+    assert results[0].balance_pln == -1372.0
