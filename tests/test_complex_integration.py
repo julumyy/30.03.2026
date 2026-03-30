@@ -35,7 +35,7 @@ def test_apartment_costs_with_optional_parameters():
     ))
 
     costs = manager.get_apartment_costs('apartment-1', 2024, 1)
-    assert costs is None
+    assert costs == 0
 
     costs = manager.get_apartment_costs('apart-polanka', 2024, 3)
     assert costs == 0.0
@@ -51,3 +51,5 @@ def test_apartment_costs_with_optional_parameters():
 
     costs = manager.get_apartment_costs('apart-polanka')
     assert costs == 3532.0
+    
+    

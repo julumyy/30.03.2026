@@ -24,14 +24,17 @@ class Manager:
                 return False
         return True
     
-    def get_apartment_costs(self, apartment_key, year, month):
+    def get_apartment_costs(self, apartment_key, year=None, month=None):
         total = 0
-        #apartments = Apartment.from_json_file(parameters.apartments_json_path)
+        
         for bill in self.bills:
             if apartment_key == bill.apartment:
-                if year == bill.settlement_year:
-                    if month == bill.settlement_month:
+                if year == bill.settlement_year or not year:
+                    if month == bill.settlement_month or not month:
                         total += bill.amount_pln
-        
+                    #else:
+                    #    total += bill.amount_pln
+
         return total
         
+    
